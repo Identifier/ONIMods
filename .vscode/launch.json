@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Build + Deploy All Mods",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "echo Build + Deploy All Mods completed; exit",
+      "preLaunchTask": "Build + Deploy All Mods"
+    }
+  ]
+}

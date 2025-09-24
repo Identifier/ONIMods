@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyName>ContainerTooltips</AssemblyName>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <!-- Mod ID used for deployment path; must match mod.yaml staticID -->
+    <ModId>ContainerTooltips</ModId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>../lib/0Harmony.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>../lib/Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>../lib/Assembly-CSharp-firstpass.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>../lib/UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>../lib/UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>../lib/UnityEngine.UI.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Cross-platform deploy to ONI Local mods folder via MSBuild -->
+  <PropertyGroup>
+    <!-- Allow override: dotnet build /p:OniLocalModsDir=... or env var -->
+    <OniLocalModsDir Condition="'$(OniLocalModsDir)' == '' and '$(OS)' == 'Windows_NT'">$(USERPROFILE)\Documents\Klei\OxygenNotIncluded\mods\Local\$(ModId)</OniLocalModsDir>
+    <OniLocalModsDir Condition="'$(OniLocalModsDir)' == '' and '$(OS)' != 'Windows_NT'">$(HOME)/Library/Application Support/unity.Klei.Oxygen Not Included/mods/Local/$(ModId)</OniLocalModsDir>
+  </PropertyGroup>
+
+  <Target Name="DeployOniMod" AfterTargets="Build" Condition="'$(DeployOniMod)' != ''">
+    <Message Text="Deploying mod to: $(OniLocalModsDir)" Importance="High" />
+    <MakeDir Directories="$(OniLocalModsDir)" />
+    <ItemGroup>
+      <ModOutputs Include="$(ProjectDir)mod.yaml" />
+      <ModOutputs Include="$(ProjectDir)mod_info.yaml" />
+      <ModOutputs Include="$(TargetPath)" />
+      <ModOutputs Include="$(TargetDir)$(TargetName).pdb" Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ModOutputs)" DestinationFolder="$(OniLocalModsDir)" SkipUnchangedFiles="true" />
+  </Target>
+</Project>

@@ -1,0 +1,30 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZoomSpeed", "ZoomSpeed\ZoomSpeed.csproj", "{641D3707-8F27-0D3F-C669-892782149068}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContainerTooltips", "ContainerTooltips\ContainerTooltips.csproj", "{3899B4E0-8BCD-57A9-002B-3321B998C002}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{641D3707-8F27-0D3F-C669-892782149068}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{641D3707-8F27-0D3F-C669-892782149068}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{641D3707-8F27-0D3F-C669-892782149068}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{641D3707-8F27-0D3F-C669-892782149068}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3899B4E0-8BCD-57A9-002B-3321B998C002}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3899B4E0-8BCD-57A9-002B-3321B998C002}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3899B4E0-8BCD-57A9-002B-3321B998C002}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3899B4E0-8BCD-57A9-002B-3321B998C002}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {12EECCF6-6874-4944-A89F-90EF8D5AA9DD}
+	EndGlobalSection
+EndGlobal

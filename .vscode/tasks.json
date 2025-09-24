@@ -1,0 +1,128 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build ContainerTooltips",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "ContainerTooltips/ContainerTooltips.csproj"
+      ],
+      "group": "build",
+      "problemMatcher": "$msCompile",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      }
+    },
+    {
+      "label": "Build ZoomSpeed",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "ZoomSpeed/ZoomSpeed.csproj"
+      ],
+      "group": "build",
+      "problemMatcher": "$msCompile",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      }
+    },
+    {
+      "label": "Build All Mods",
+      "dependsOn": [
+        "Build ContainerTooltips",
+        "Build ZoomSpeed"
+      ],
+      "dependsOrder": "parallel",
+      "group": "build",
+    },
+    {
+      "label": "Build + Deploy ContainerTooltips",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "ContainerTooltips/ContainerTooltips.csproj",
+        "/p:DeployOniMod=true"
+      ],
+      "group": "build",
+      "problemMatcher": "$msCompile",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      }
+    },
+    {
+      "label": "Build + Deploy ZoomSpeed",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "ZoomSpeed/ZoomSpeed.csproj",
+        "/p:DeployOniMod=true"
+      ],
+      "group": "build",
+      "problemMatcher": "$msCompile",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      }
+    },
+    {
+      "label": "Build + Deploy All Mods",
+      "dependsOn": [
+        "Build + Deploy ContainerTooltips",
+        "Build + Deploy ZoomSpeed"
+      ],
+      "dependsOrder": "parallel",
+      "group": "build",
+    },
+    {
+      "label": "Run Oxygen Not Included",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-lc",
+        "\"${config:oniMods.oniExecutable}\""
+      ],
+      "presentation": {
+        "reveal": "always"
+      },
+      "problemMatcher": [],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "windows": {
+        "command": "powershell",
+        "args": [
+          "-NoProfile",
+          "-Command",
+          "Start-Process -FilePath \"${config:oniMods.oniExecutable}\""
+        ]
+      },
+      "linux": {
+        "command": "bash",
+        "args": [
+          "-lc",
+          "\"${config:oniMods.oniExecutable}\" &"
+        ]
+      },
+      "osx": {
+        "command": "bash",
+        "args": [
+          "-lc",
+          "\"${config:oniMods.oniExecutable}\" &"
+        ]
+      }
+    },
+    {
+      "label": "Build, Deploy, and Launch ONI",
+      "dependsOn": [
+        "Build + Deploy All Mods",
+        "Run Oxygen Not Included"
+      ],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
+    }
+  ]
+}

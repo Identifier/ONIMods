@@ -1,0 +1,64 @@
+{
+  "highlight.decorations": {
+    "rangeBehavior": 1
+  },
+  "highlight.regexes": {
+    "(\\[ContainerTooltips\\])()": { // A regex will be created from this string, don't forget to double escape it
+      "filterFileRegex": ".*\\.log", // Apply only if the current file's path matches this regex. Requires double escaping
+      "decorations": [ // Decoration options to apply to the capturing groups
+        {
+          "color": "#61abff",
+          "fontStyle": "bold"
+        },
+        {
+          "overviewRulerColor": "#0077ff",
+          "overviewRulerLane": 1,
+          "borderStyle": "solid",
+          "borderColor": "#0077ff",
+          "isWholeLine": true
+        }
+      ]
+    },
+    "(\\[ZoomSpeed\\])()": { // A regex will be created from this string, don't forget to double escape it
+      "filterFileRegex": ".*\\.log", // Apply only if the current file's path matches this regex. Requires double escaping
+      "decorations": [ // Decoration options to apply to the capturing groups
+        {
+          "color": "#ba7dd3",
+          "fontStyle": "bold"
+        },
+        {
+          "overviewRulerColor": "#a748d0",
+          "overviewRulerLane": 2,
+          "borderStyle": "solid",
+          "borderColor": "#a748d0",
+          "isWholeLine": true
+        }
+      ]
+    }
+  },
+  "smart-log.fileConfigs": [
+    {
+      "name": "Oxygen Not Included Log",
+      "identifyRegex": "\\[INFO\\]",
+      "timeRegex": "^\\[(\\d{2}:\\d{2}:\\d{2}(\\.\\d{1-3})?)\\]",
+      "events": [
+        {
+          "level": 1,
+          "regex": "\\[ContainerTooltips\\]:\\s*(.*)",
+          "icon": "note"
+        },
+        {
+          "level": 1,
+          "regex": "\\[ZoomSpeed\\]:\\s*(.*)",
+          "icon": "note"
+        },
+        {
+          "level": 1,
+          "decorationId": "error",
+          "regex": "\\[ERROR\\]\\s*(.*)",
+          "icon": "error"
+        }
+      ]
+    }
+  ]
+}
