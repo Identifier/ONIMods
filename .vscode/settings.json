@@ -13,8 +13,7 @@
         {
           "overviewRulerColor": "#0077ff",
           "overviewRulerLane": 1,
-          "borderStyle": "solid",
-          "borderColor": "#0077ff",
+          "backgroundColor": "#00428d",
           "isWholeLine": true
         }
       ]
@@ -29,8 +28,7 @@
         {
           "overviewRulerColor": "#a748d0",
           "overviewRulerLane": 2,
-          "borderStyle": "solid",
-          "borderColor": "#a748d0",
+          "backgroundColor": "#4b006b",
           "isWholeLine": true
         }
       ]

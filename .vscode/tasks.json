@@ -7,6 +7,7 @@
       "command": "dotnet",
       "args": [
         "build",
+        "-v:d",
         "ContainerTooltips/ContainerTooltips.csproj"
       ],
       "group": "build",
@@ -21,6 +22,7 @@
       "command": "dotnet",
       "args": [
         "build",
+        "-v:d",
         "ZoomSpeed/ZoomSpeed.csproj"
       ],
       "group": "build",
@@ -44,6 +46,7 @@
       "command": "dotnet",
       "args": [
         "build",
+        "-v:d",
         "ContainerTooltips/ContainerTooltips.csproj",
         "/p:DeployOniMod=true"
       ],
@@ -59,6 +62,7 @@
       "command": "dotnet",
       "args": [
         "build",
+        "-v:d",
         "ZoomSpeed/ZoomSpeed.csproj",
         "/p:DeployOniMod=true"
       ],
@@ -76,53 +80,6 @@
       ],
       "dependsOrder": "parallel",
       "group": "build",
-    },
-    {
-      "label": "Run Oxygen Not Included",
-      "type": "shell",
-      "command": "bash",
-      "args": [
-        "-lc",
-        "\"${config:oniMods.oniExecutable}\""
-      ],
-      "presentation": {
-        "reveal": "always"
-      },
-      "problemMatcher": [],
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "windows": {
-        "command": "powershell",
-        "args": [
-          "-NoProfile",
-          "-Command",
-          "Start-Process -FilePath \"${config:oniMods.oniExecutable}\""
-        ]
-      },
-      "linux": {
-        "command": "bash",
-        "args": [
-          "-lc",
-          "\"${config:oniMods.oniExecutable}\" &"
-        ]
-      },
-      "osx": {
-        "command": "bash",
-        "args": [
-          "-lc",
-          "\"${config:oniMods.oniExecutable}\" &"
-        ]
-      }
-    },
-    {
-      "label": "Build, Deploy, and Launch ONI",
-      "dependsOn": [
-        "Build + Deploy All Mods",
-        "Run Oxygen Not Included"
-      ],
-      "dependsOrder": "sequence",
-      "problemMatcher": []
     }
   ]
 }

@@ -5,6 +5,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
+    <RestorePackagesPath>..\packages</RestorePackagesPath>
     <!-- Mod ID used for deployment path; must match mod.yaml staticID -->
     <ModId>ZoomSpeed</ModId>
   </PropertyGroup>
@@ -28,6 +29,15 @@
     <Reference Include="UnityEngine.UI">
       <HintPath>../lib/UnityEngine.UI.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>../lib/UnityEngine.InputLegacyModule.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="PLib" Version="4.17.1" />
+    <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.26" PrivateAssets="All" />
   </ItemGroup>
 
   <!-- Cross-platform deploy to ONI Local mods folder via MSBuild -->
@@ -37,7 +47,34 @@
     <OniLocalModsDir Condition="'$(OniLocalModsDir)' == '' and '$(OS)' != 'Windows_NT'">$(HOME)/Library/Application Support/unity.Klei.Oxygen Not Included/mods/Local/$(ModId)</OniLocalModsDir>
   </PropertyGroup>
 
-  <Target Name="DeployOniMod" AfterTargets="Build" Condition="'$(DeployOniMod)' != ''">
+  <Target Name="MergeDependencies" AfterTargets="Build">
+    <PropertyGroup>
+      <MergedAssemblyPath>$(TargetDir)\Merged\$(TargetName).dll</MergedAssemblyPath>
+      <MergedPdbPath>$([System.IO.Path]::ChangeExtension('$(MergedAssemblyPath)', '.pdb'))</MergedPdbPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <MergeAssemblies Include="$(TargetPath)" />
+      <MergeAssemblies Include="$(TargetDir)PLib.dll" />
+    </ItemGroup>
+
+    <ILRepack
+      Parallel="true"
+      DebugInfo="true"
+      InputAssemblies="@(MergeAssemblies)"
+      LibraryPath="$(TargetDir)"
+      TargetKind="SameAsPrimaryAssembly"
+      OutputFile="$(MergedAssemblyPath)" />
+
+    <Copy SourceFiles="$(MergedAssemblyPath)" DestinationFiles="$(TargetPath)" OverwriteReadOnlyFiles="true" />
+    <Copy SourceFiles="$(MergedPdbPath)" DestinationFiles="$(TargetDir)$(TargetName).pdb" Condition="Exists('$(MergedPdbPath)')" OverwriteReadOnlyFiles="true" />
+
+    <Delete Files="$(MergedAssemblyPath)" />
+    <Delete Files="$(MergedPdbPath)" Condition="Exists('$(MergedPdbPath)')" />
+    <Delete Files="$(TargetDir)PLib.dll" />
+  </Target>
+
+  <Target Name="DeployOniMod" AfterTargets="Build" DependsOnTargets="MergeDependencies" Condition="'$(DeployOniMod)' != ''">
     <Message Text="Deploying mod to: $(OniLocalModsDir)" Importance="High" />
     <MakeDir Directories="$(OniLocalModsDir)" />
     <ItemGroup>
