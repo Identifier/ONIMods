@@ -8,6 +8,7 @@
       "args": [
         "build",
         "-v:d",
+        "-c:${config:BuildConfiguration}",
         "ContainerTooltips/ContainerTooltips.csproj"
       ],
       "group": "build",
@@ -23,6 +24,7 @@
       "args": [
         "build",
         "-v:d",
+        "-c:${config:BuildConfiguration}",
         "ZoomSpeed/ZoomSpeed.csproj"
       ],
       "group": "build",
@@ -47,6 +49,7 @@
       "args": [
         "build",
         "-v:d",
+        "-c:${config:BuildConfiguration}",
         "ContainerTooltips/ContainerTooltips.csproj",
         "/p:DeployOniMod=true"
       ],
@@ -63,6 +66,7 @@
       "args": [
         "build",
         "-v:d",
+        "-c:${config:BuildConfiguration}",
         "ZoomSpeed/ZoomSpeed.csproj",
         "/p:DeployOniMod=true"
       ],

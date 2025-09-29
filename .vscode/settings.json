@@ -1,14 +1,13 @@
 {
-  "highlight.decorations": {
-    "rangeBehavior": 1
-  },
+  "BuildConfiguration": "Release",
   "highlight.regexes": {
     "(\\[ContainerTooltips\\])()": { // A regex will be created from this string, don't forget to double escape it
       "filterFileRegex": ".*\\.log", // Apply only if the current file's path matches this regex. Requires double escaping
       "decorations": [ // Decoration options to apply to the capturing groups
         {
           "color": "#61abff",
-          "fontStyle": "bold"
+          "fontWeight": "bold",
+          "rangeBehavior": 1
         },
         {
           "overviewRulerColor": "#0077ff",
@@ -23,7 +22,8 @@
       "decorations": [ // Decoration options to apply to the capturing groups
         {
           "color": "#ba7dd3",
-          "fontStyle": "bold"
+          "fontWeight": "bold",
+          "rangeBehavior": 1
         },
         {
           "overviewRulerColor": "#a748d0",

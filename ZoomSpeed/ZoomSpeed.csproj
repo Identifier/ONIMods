@@ -66,13 +66,9 @@
       TargetKind="SameAsPrimaryAssembly"
       OutputFile="$(MergedAssemblyPath)" />
 
-    <Copy SourceFiles="$(MergedAssemblyPath)" DestinationFiles="$(TargetPath)" OverwriteReadOnlyFiles="true" />
-    <Copy SourceFiles="$(MergedPdbPath)" DestinationFiles="$(TargetDir)$(TargetName).pdb" Condition="Exists('$(MergedPdbPath)')" OverwriteReadOnlyFiles="true" />
-
-    <Delete Files="$(MergedAssemblyPath)" />
-    <Delete Files="$(MergedPdbPath)" Condition="Exists('$(MergedPdbPath)')" />
-    <Delete Files="$(TargetDir)PLib.dll" />
-  </Target>
+    <Move SourceFiles="$(MergedAssemblyPath)" DestinationFiles="$(TargetPath)" OverwriteReadOnlyFiles="true" />
+    <Move SourceFiles="$(MergedPdbPath)" DestinationFiles="$(TargetDir)$(TargetName).pdb" Condition="Exists('$(MergedPdbPath)')" OverwriteReadOnlyFiles="true" />
+</Target>
 
   <Target Name="DeployOniMod" AfterTargets="Build" DependsOnTargets="MergeDependencies" Condition="'$(DeployOniMod)' != ''">
     <Message Text="Deploying mod to: $(OniLocalModsDir)" Importance="High" />
