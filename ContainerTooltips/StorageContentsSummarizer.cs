@@ -213,8 +213,20 @@ namespace ContainerTooltips
             }
 
             var totalText = GameUtil.GetFormattedDiseaseAmount(summary.TotalDiseaseCount);
-            var diseaseNames = string.Join(" + ", summary.Diseases.Select(d => GameUtil.GetFormattedDiseaseName(d.Key)));
+            var diseaseNames = string.Join(" + ", summary.Diseases.Select(d => SafeGetDiseaseName(d.Key)));
             return $"{totalText} [{diseaseNames}]";
+
+            static string SafeGetDiseaseName(byte diseaseId)
+            {
+                try
+                {
+                    return GameUtil.GetFormattedDiseaseName(diseaseId);
+                }
+                catch
+                {
+                    return $"0x{diseaseId:X2}";
+                }
+            }
         }
 
         private static IEnumerable<ContentSummary> FlattenedSummaries(ContentSummaryCollection entries)
