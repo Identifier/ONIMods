@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using HarmonyLib;
 using KMod;
 using PeterHan.PLib.Core;
@@ -74,6 +75,7 @@ namespace ContainerTooltips
 
 		public static string GenerateContainerTooltip(object? data, int lineLimit)
 		{
+			// Debug.Log($"[ContainerTooltips]: GenerateContainerTooltip called with data type {data?.GetType().FullName ?? "<null>"} lineLimit={lineLimit}");
 			if (data is not Storage[] storages || storages.Length == 0)
 			{
 				Debug.LogWarning("[ContainerTooltips]: GenerateContainerTooltip received no storage data");
@@ -83,19 +85,32 @@ namespace ContainerTooltips
 			// The game calls this method each frame that the status item is being displayed, so avoid doing expensive work every time
 			var clock = GameClock.Instance;
 			var tick = clock?.GetTime() ?? float.NaN;
-			var key = storages[0].GetInstanceID();
-			if (statusTextCache.TryGetValue(key, out var entry) && entry.Tick == tick)
+			var key = storages[0].GetInstanceID() + (long)lineLimit << 32;
+			if (resultCache.TryGetValue(key, out var entry) && entry.Tick == tick)
 			{
 				return entry.Result;
 			}
 
-			var summaries = storages.Select(storage => StorageContentsSummarizer.SummarizeStorageContents(storage, Options.Instance.StatusLineLimit));
-			summaries = summaries.Where(s => !string.IsNullOrEmpty(s));
-			var result = Strings.Get(NameStringKey) + ": " + (summaries.All(string.IsNullOrEmpty) ? Strings.Get(EmptyStringKey) : string.Join("\n", summaries));
-			statusTextCache[key] = new SummaryCacheEntry { Tick = tick, Result = result };
+			var summary = StorageContentsSummarizer.SummarizeStorageContents(storages, lineLimit);
+			var resultBuilder = new StringBuilder(summary.Length + 50);
+			resultBuilder.Append(Strings.Get(NameStringKey));
+			resultBuilder.Append(": ");
+			if (string.IsNullOrEmpty(summary))
+			{
+				resultBuilder.Append(Strings.Get(EmptyStringKey));
+			}
+			else
+			{
+				if (summary.Contains('\n'))
+				{
+					resultBuilder.Append('\n');
+				}
+				resultBuilder.Append(summary);
+			}
+			var result = resultBuilder.ToString();
 
 			// Debug.Log($"[ContainerTooltips]: GenerateContainerTooltip computed new summary at tick={tick} for storages={string.Join(", ", storages.Select(storage => storage.name))} result={result.Replace("\n", ", ")}");
-			
+			resultCache[key] = new SummaryCacheEntry { Tick = tick, Result = result };			
 			return result;
 		}
 
@@ -105,7 +120,6 @@ namespace ContainerTooltips
 			public string Result;
 		}
 
-		private static readonly Dictionary<int, SummaryCacheEntry> statusTextCache = [];
-		private static readonly Dictionary<int, SummaryCacheEntry> tooltipTextCache = [];
+		private static readonly Dictionary<long, SummaryCacheEntry> resultCache = [];
 	}
 }

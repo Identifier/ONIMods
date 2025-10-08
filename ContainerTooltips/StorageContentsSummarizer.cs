@@ -8,20 +8,20 @@ namespace ContainerTooltips
 {
     public static class StorageContentsSummarizer
     {
-        public static string SummarizeStorageContents(Storage storage, int maxLines)
+        public static string SummarizeStorageContents(Storage[] storages, int maxLineCount)
         {
-            // Debug.Log($"[ContainerTooltips]: BuildContentsSummary called for storage={storage?.name ?? "<null>"} maxLines={maxLines}");
+            // Debug.Log($"[ContainerTooltips]: SummarizeStorageContents called for storage={storage?.name ?? "<null>"} maxLines={maxLines}");
 
-            if (storage == null)
+            if (storages == null)
             {
-                Debug.LogWarning("[ContainerTooltips]: Skipping null Storage");
+                Debug.LogWarning("[ContainerTooltips]: Skipping null Storages");
                 return string.Empty;
             }
 
-            var items = storage.items;
+            var items = storages.SelectMany(storage => storage.items).ToList();
             if (items == null || items.Count == 0)
             {
-                // Debug.Log("[ContainerTooltips]: BuildContentsSummary found no items");
+                // Debug.Log("[ContainerTooltips]: SummarizeStorageContents found no items in storage(s)");
                 return string.Empty;
             }
 
@@ -34,7 +34,7 @@ namespace ContainerTooltips
 
             if (contentSummaries.Count == 0)
             {
-                Debug.LogWarning("[ContainerTooltips]: BuildContentsSummary created no summaries after processing items");
+                Debug.LogWarning("[ContainerTooltips]: SummarizeStorageContents created no summaries after processing items");
                 return string.Empty;
             }
 
@@ -47,14 +47,13 @@ namespace ContainerTooltips
                 return string.Empty;
             }
 
-            var maxLineCount = Mathf.Max(1, maxLines);
             var sb = new StringBuilder(flattened.Count * 100);
             var lineIndex = 0;
             foreach (var summary in FlattenedSummaries(contentSummaries))
             {
                 if (!(summary.Units > 0 || summary.Calories > 0 || summary.Diseases?.Count > 0 || summary.Children?.Count > 0))
                 {
-                    Debug.Log($"[ContainerTooltips]: Skipping content summary for {storage.name}'s {summary.Name} due to no substantial information.");
+                    Debug.Log($"[ContainerTooltips]: SummarizeStorageContents skipping content summary for {summary.Name} due to no substantial information.");
                     continue;
                 }
 
@@ -80,7 +79,7 @@ namespace ContainerTooltips
                 sb.Append(" more...");
             }
 
-            return (lineIndex > 1 ? "\n" : string.Empty) + sb.ToString();
+            return sb.ToString();
         }
 
         private static void ProcessStorageItem(GameObject? item, ContentSummaryCollection contentSummaries, HashSet<int> recursionGuard)
