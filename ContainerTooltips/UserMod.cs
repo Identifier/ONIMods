@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using HarmonyLib;
 using KMod;
 using PeterHan.PLib.Core;
@@ -61,51 +62,40 @@ namespace ContainerTooltips
 
 		private static string ResolveStatusText(string _, object data)
 		{
-			var clock = GameClock.Instance;
-			var tick = clock?.GetTime() ?? float.NaN;
-			// Debug.Log($"[ContainerTooltips]: ResolveStatusText invoked at {tick} with data type {data?.GetType().FullName ?? "<null>"}");
+			// Debug.Log($"[ContainerTooltips]: ResolveStatusText for {_} invoked with data type {data?.GetType().FullName ?? "<null>"}");
+			return GenerateContainerTooltip(data, Options.Instance.StatusLineLimit);
+		}
 
-			if (data is not Storage storage)
+		private static string ResolveTooltipText(string _, object data)
+		{
+			// Debug.Log($"[ContainerTooltips]: ResolveTooltipText for {_} invoked with data type {data?.GetType().FullName ?? "<null>"}");
+			return GenerateContainerTooltip(data, Options.Instance.TooltipLineLimit);
+		}
+
+		public static string GenerateContainerTooltip(object? data, int lineLimit)
+		{
+			if (data is not Storage[] storages || storages.Length == 0)
 			{
-				Debug.LogWarning("[ContainerTooltips]: ResolveStatusText received non-storage data");
+				Debug.LogWarning("[ContainerTooltips]: GenerateContainerTooltip received no storage data");
 				return string.Empty;
 			}
 
-			var key = storage.GetInstanceID();
+			// The game calls this method each frame that the status item is being displayed, so avoid doing expensive work every time
+			var clock = GameClock.Instance;
+			var tick = clock?.GetTime() ?? float.NaN;
+			var key = storages[0].GetInstanceID();
 			if (statusTextCache.TryGetValue(key, out var entry) && entry.Tick == tick)
 			{
 				return entry.Result;
 			}
 
-			var summary = StorageContentsSummarizer.SummarizeStorageContents(storage, Options.Instance.StatusLineLimit);
-			var result = Strings.Get(NameStringKey) + ": " + (string.IsNullOrEmpty(summary) ? Strings.Get(EmptyStringKey) : summary);
+			var summaries = storages.Select(storage => StorageContentsSummarizer.SummarizeStorageContents(storage, Options.Instance.StatusLineLimit));
+			summaries = summaries.Where(s => !string.IsNullOrEmpty(s));
+			var result = Strings.Get(NameStringKey) + ": " + (summaries.All(string.IsNullOrEmpty) ? Strings.Get(EmptyStringKey) : string.Join("\n", summaries));
 			statusTextCache[key] = new SummaryCacheEntry { Tick = tick, Result = result };
-			// Debug.Log($"[ContainerTooltips]: ResolveStatusText computed new summary at tick={tick} for storage={storage.name} result={result.Replace("\n", ", ")}");
-			return result;
-		}
 
-		private static string ResolveTooltipText(string _, object data)
-		{
-			var clock = GameClock.Instance;
-			var tick = clock?.GetTime() ?? float.NaN;
-			// Debug.Log($"[ContainerTooltips]: ResolveTooltipText invoked at {tick} with data type {data?.GetType().FullName ?? "<null>"}");
-
-			if (data is not Storage storage)
-			{
-				Debug.LogWarning("[ContainerTooltips]: ResolveTooltipText received non-storage data");
-				return string.Empty;
-			}
-
-			var key = storage.GetInstanceID();
-			if (tooltipTextCache.TryGetValue(key, out var entry) && entry.Tick == tick)
-			{
-				return entry.Result;
-			}
-
-			var summary = StorageContentsSummarizer.SummarizeStorageContents(storage, Options.Instance.TooltipLineLimit);
-			var result = Strings.Get(NameStringKey) + ": " + (string.IsNullOrEmpty(summary) ? Strings.Get(EmptyStringKey) : summary);
-			tooltipTextCache[key] = new SummaryCacheEntry { Tick = tick, Result = result };
-			// Debug.Log($"[ContainerTooltips]: ResolveTooltipText computed new summary at tick={tick} for storage={storage.name} result={result.Replace("\n", ", ")}");
+			// Debug.Log($"[ContainerTooltips]: GenerateContainerTooltip computed new summary at tick={tick} for storages={string.Join(", ", storages.Select(storage => storage.name))} result={result.Replace("\n", ", ")}");
+			
 			return result;
 		}
 
