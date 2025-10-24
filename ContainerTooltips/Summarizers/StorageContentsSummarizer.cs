@@ -8,20 +8,17 @@ namespace ContainerTooltips
 {
     public static class StorageContentsSummarizer
     {
-        public static string SummarizeStorageContents(Storage[] storages, int maxLineCount)
+        public static string Summarize(Storage[] storages, int maxLineCount)
         {
-            // Debug.Log($"[ContainerTooltips]: SummarizeStorageContents called for storage={storage?.name ?? "<null>"} maxLines={maxLines}");
-
             if (storages == null)
             {
-                Debug.LogWarning("[ContainerTooltips]: Skipping null Storages");
+                Debug.LogWarning("[ContainerTooltips]: StorageContentsSummarizer.Summarize skipping null storages");
                 return string.Empty;
             }
 
             var items = storages.SelectMany(storage => storage.items).ToList();
-            if (items == null || items.Count == 0)
+            if (items.Count == 0)
             {
-                // Debug.Log("[ContainerTooltips]: SummarizeStorageContents found no items in storage(s)");
                 return string.Empty;
             }
 
@@ -34,7 +31,7 @@ namespace ContainerTooltips
 
             if (contentSummaries.Count == 0)
             {
-                Debug.LogWarning("[ContainerTooltips]: SummarizeStorageContents created no summaries after processing items");
+                Debug.LogWarning("[ContainerTooltips]: StorageContentsSummarizer.Summarize created no summaries after processing items");
                 return string.Empty;
             }
 
@@ -53,7 +50,7 @@ namespace ContainerTooltips
             {
                 if (!(summary.Units > 0 || summary.Calories > 0 || summary.Diseases?.Count > 0 || summary.Children?.Count > 0))
                 {
-                    Debug.Log($"[ContainerTooltips]: SummarizeStorageContents skipping content summary for {summary.Name} due to no substantial information.");
+                    // Some storages (like pumps) leave the record of the item in the storage even after it's been pumped out and has no more mass/units.
                     continue;
                 }
 

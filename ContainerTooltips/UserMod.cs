@@ -6,20 +6,28 @@ using HarmonyLib;
 using KMod;
 using PeterHan.PLib.Core;
 using PeterHan.PLib.Options;
+using UnityEngine;
 
 namespace ContainerTooltips
 {
 	public class UserMod : UserMod2
 	{
 		public const string ModStringsPrefix = "CONTAINERTOOLTIPS";
-		public const string StatusItemId = "CONTAINERTOOLTIPSTATUSITEM";
 
-		public const string ComposedPrefix = $"STRINGS.{ModStringsPrefix}.STATUSITEMS.{StatusItemId}";
-		public const string NameStringKey = ComposedPrefix + ".NAME";
-		public const string TooltipStringKey = ComposedPrefix + ".TOOLTIP";
-		public const string EmptyStringKey = ComposedPrefix + ".EMPTY";
+		public const string ContentsStatusItemId = "CONTAINERTOOLTIPSTATUSITEM";
+		private const string ContentsStringsPrefix = $"STRINGS.{ModStringsPrefix}.STATUSITEMS.{ContentsStatusItemId}";
+		public const string ContentsNameStringKey = ContentsStringsPrefix + ".NAME";
+		public const string ContentsTooltipStringKey = ContentsStringsPrefix + ".TOOLTIP";
+		public const string ContentsEmptyStringKey = ContentsStringsPrefix + ".EMPTY";
+
+		public const string FiltersStatusItemId = "CONTAINERTOOLTIPFILTERSTATUSITEM";
+		private const string FiltersStringsPrefix = $"STRINGS.{ModStringsPrefix}.STATUSITEMS.{FiltersStatusItemId}";
+		public const string FiltersNameStringKey = FiltersStringsPrefix + ".NAME";
+		public const string FiltersTooltipStringKey = FiltersStringsPrefix + ".TOOLTIP";
+		public const string FiltersEmptyStringKey = FiltersStringsPrefix + ".EMPTY";
 
 		public static StatusItem? ContentsStatusItem;
+		public static StatusItem? FiltersStatusItem;
 
 		public override void OnLoad(Harmony harmony)
 		{
@@ -28,90 +36,150 @@ namespace ContainerTooltips
 			new POptions().RegisterOptions(this, typeof(Options));
 		}
 
-		public static void InitializeStatusItem()
+		public static void InitializeStatusItems()
 		{
-			if (ContentsStatusItem != null)
+			var contentsInitialized = ContentsStatusItem != null;
+			var filterInitialized = FiltersStatusItem != null;
+
+			if (contentsInitialized && filterInitialized)
 			{
-				Debug.Log("[ContainerTooltips]: ContentsStatusItem already initialized, skipping creation");
+				Debug.Log("[ContainerTooltips]: Status items already initialized, skipping creation");
 				return;
 			}
 
-			// Add localization strings for our status item, based on the same logic as the internal StatusItem constructor (although I don't know where these are used)
-			Strings.Add(NameStringKey, "Contents");
-			Strings.Add(TooltipStringKey, "Shows the items in internal storage.");
-			Strings.Add(EmptyStringKey, "None");
+			AddStringIfMissing(ContentsNameStringKey, "Contents");
+			AddStringIfMissing(ContentsTooltipStringKey, "Shows the items in internal storage.");
+			AddStringIfMissing(ContentsEmptyStringKey, "None");
 
-			// This is the object that's needed to add a status item to a KSelectable, which will appear in the object's hover card/tooltip as well as the top of the info panel when selected
-			var statusItem = new StatusItem(
-				StatusItemId,
-				ModStringsPrefix,
-				"status_item_info",
-				StatusItem.IconType.Info,
-				NotificationType.Neutral,
-				false,
-				OverlayModes.None.ID);
+			AddStringIfMissing(FiltersNameStringKey, "Filters");
+			AddStringIfMissing(FiltersTooltipStringKey, "Shows the current filter configuration.");
+			AddStringIfMissing(FiltersEmptyStringKey, "None");
 
-			// These are the callbacks that will be invoked on each frame while the status item is being displayed on screen
-			statusItem.resolveStringCallback = ResolveStatusText;
-			statusItem.resolveTooltipCallback = ResolveTooltipText;
-
-			// Keep it for cleanup and/or replacing later if needed
-			ContentsStatusItem = statusItem;
-
-			Debug.Log("[ContainerTooltips]: ContentsStatusItem created and callbacks assigned");
-		}
-
-		private static string ResolveStatusText(string _, object data)
-		{
-			// Debug.Log($"[ContainerTooltips]: ResolveStatusText for {_} invoked with data type {data?.GetType().FullName ?? "<null>"}");
-			return GenerateContainerTooltip(data, Options.Instance.StatusLineLimit);
-		}
-
-		private static string ResolveTooltipText(string _, object data)
-		{
-			// Debug.Log($"[ContainerTooltips]: ResolveTooltipText for {_} invoked with data type {data?.GetType().FullName ?? "<null>"}");
-			return GenerateContainerTooltip(data, Options.Instance.TooltipLineLimit);
-		}
-
-		public static string GenerateContainerTooltip(object? data, int lineLimit)
-		{
-			// Debug.Log($"[ContainerTooltips]: GenerateContainerTooltip called with data type {data?.GetType().FullName ?? "<null>"} lineLimit={lineLimit}");
-			if (data is not Storage[] storages || storages.Length == 0)
+			if (!contentsInitialized)
 			{
-				Debug.LogWarning("[ContainerTooltips]: GenerateContainerTooltip received no storage data");
-				return string.Empty;
+				var contentsStatusItem = new StatusItem(
+					ContentsStatusItemId,
+					ModStringsPrefix,
+					"status_item_info",
+					StatusItem.IconType.Info,
+					NotificationType.Neutral,
+					false,
+					OverlayModes.None.ID);
+
+				contentsStatusItem.resolveStringCallback = ResolveContentsStatusText;
+				contentsStatusItem.resolveTooltipCallback = ResolveContentsTooltipText;
+
+				ContentsStatusItem = contentsStatusItem;
+				Debug.Log("[ContainerTooltips]: ContentsStatusItem created and callbacks assigned");
 			}
 
+			if (!filterInitialized)
+			{
+				var filtersStatusItem = new StatusItem(
+					FiltersStatusItemId,
+					ModStringsPrefix,
+					"status_item_info",
+					StatusItem.IconType.Info,
+					NotificationType.Neutral,
+					false,
+					OverlayModes.None.ID);
+
+				filtersStatusItem.resolveStringCallback = ResolveFilterStatusText;
+				filtersStatusItem.resolveTooltipCallback = ResolveFilterTooltipText;
+
+				FiltersStatusItem = filtersStatusItem;
+				Debug.Log("[ContainerTooltips]: FiltersStatusItem created and callbacks assigned");
+			}
+		}
+
+		private static string ResolveContentsStatusText(string _, object data)
+		{
+			return ResolveContentsText(data, Options.Instance.StatusLineLimit);
+		}
+
+		private static string ResolveContentsTooltipText(string _, object data)
+		{
+			return ResolveContentsText(data, Options.Instance.TooltipLineLimit);
+		}
+
+		private static string ResolveFilterStatusText(string _, object data)
+		{
+            return ResolveFilterText(data, Options.Instance.StatusLineLimit);
+		}
+
+		private static string ResolveFilterTooltipText(string _, object data)
+        {
+            return ResolveFilterText(data, Options.Instance.TooltipLineLimit);
+        }
+
+		private static string ResolveContentsText(object data, int lineLimit)
+		{
+			if (data is not Storage[] storages || storages.Length == 0)
+			{
+				Debug.LogWarning("[ContainerTooltips]: ResolveContentsText received no storage data");
+				return string.Empty;
+			}
+			var key = storages[0].GetInstanceID() + (long)lineLimit << 32;
+			return GetLatestText(key, () => StorageContentsSummarizer.Summarize(storages, lineLimit), ContentsNameStringKey, ContentsEmptyStringKey);
+		}
+
+		private static string ResolveFilterText(object data, int lineLimit)
+		{
+			if (data is not ValueTuple<Filterable[]?, TreeFilterable[]?, FlatTagFilterable[]?> filterData)
+			{
+				Debug.LogWarning("[ContainerTooltips]: ResolveFilterText received no filter data");
+				return string.Empty;
+			}
+			var key = 0L; // Don't actually cache filter text, since the user can change filters even when the game is paused.
+			return GetLatestText(key, () => FilterSettingsSummarizer.Summarize(filterData, lineLimit), FiltersNameStringKey, FiltersEmptyStringKey);
+		}
+
+		public static string GetLatestText(long key, Func<string> summaryFunc, string nameKey, string emptyKey)
+		{
 			// The game calls this method each frame that the status item is being displayed, so avoid doing expensive work every time
 			var clock = GameClock.Instance;
 			var tick = clock?.GetTime() ?? float.NaN;
-			var key = storages[0].GetInstanceID() + (long)lineLimit << 32;
 			if (resultCache.TryGetValue(key, out var entry) && entry.Tick == tick)
 			{
 				return entry.Result;
 			}
 
-			var summary = StorageContentsSummarizer.SummarizeStorageContents(storages, lineLimit);
+			var summary = summaryFunc();
 			var resultBuilder = new StringBuilder(summary.Length + 50);
-			resultBuilder.Append(Strings.Get(NameStringKey));
-			resultBuilder.Append(": ");
-			if (string.IsNullOrEmpty(summary))
+			resultBuilder.Append(Strings.Get(nameKey));
+
+			if (summary.Contains('\n'))
 			{
-				resultBuilder.Append(Strings.Get(EmptyStringKey));
+				resultBuilder.Append(":\n");
 			}
 			else
 			{
-				if (summary.Contains('\n'))
-				{
-					resultBuilder.Append('\n');
-				}
+				resultBuilder.Append(": ");
+			}
+
+			if (string.IsNullOrEmpty(summary))
+			{
+				resultBuilder.Append(Strings.Get(emptyKey));
+			}
+			else
+			{
 				resultBuilder.Append(summary);
 			}
-			var result = resultBuilder.ToString();
 
-			// Debug.Log($"[ContainerTooltips]: GenerateContainerTooltip computed new summary at tick={tick} for storages={string.Join(", ", storages.Select(storage => storage.name))} result={result.Replace("\n", ", ")}");
-			resultCache[key] = new SummaryCacheEntry { Tick = tick, Result = result };			
+			var result = resultBuilder.ToString();
+			if (key != 0)
+			{
+				resultCache[key] = new SummaryCacheEntry { Tick = tick, Result = result };
+			}
 			return result;
+		}
+
+		private static void AddStringIfMissing(string key, string value)
+		{
+			if (!Strings.TryGet(key, out _))
+			{
+				Strings.Add(key, value);
+			}
 		}
 
 		private struct SummaryCacheEntry
@@ -121,5 +189,15 @@ namespace ContainerTooltips
 		}
 
 		private static readonly Dictionary<long, SummaryCacheEntry> resultCache = [];
+
+		public static string GetName(UnityEngine.Object? o)
+		{
+			return o != null ? o.name : "<null>";
+		}
+
+		public static string GetNames(UnityEngine.Object[]? os)
+		{
+			return os?.Length > 0 ? string.Join(", ", Array.ConvertAll(os, s => s?.name ?? "<null>")) : "<none>";
+		}
 	}
 }

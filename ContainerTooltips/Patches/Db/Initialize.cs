@@ -7,8 +7,8 @@ namespace ContainerTooltips
     {
         public static void Postfix()
         {
-            Debug.Log("[ContainerTooltips]: Db.Initialize postfix running. Calling UserMod.InitializeStatusItem()");
-            UserMod.InitializeStatusItem();
+            Debug.Log("[ContainerTooltips]: Db.Initialize postfix running. Calling UserMod.InitializeStatusItems()");
+            UserMod.InitializeStatusItems();
         }
     }
 }
