@@ -32,6 +32,22 @@
           "isWholeLine": true
         }
       ]
+    },
+    "(\\[ConfigurableDoorIcons\\])()": { // A regex will be created from this string, don't forget to double escape it
+      "filterFileRegex": ".*\\.log", // Apply only if the current file's path matches this regex. Requires double escaping
+      "decorations": [ // Decoration options to apply to the capturing groups
+        {
+          "color": "#56c37a",
+          "fontWeight": "bold",
+          "rangeBehavior": 1
+        },
+        {
+          "overviewRulerColor": "#2ea84a",
+          "overviewRulerLane": 3,
+          "backgroundColor": "#0f5b2f",
+          "isWholeLine": true
+        }
+      ]
     }
   },
   "smart-log.fileConfigs": [

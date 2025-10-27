@@ -34,10 +34,27 @@
       }
     },
     {
+      "label": "Build ConfigurableDoorIcons",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "-v:d",
+        "-c:${config:BuildConfiguration}",
+        "ConfigurableDoorIcons/ConfigurableDoorIcons.csproj"
+      ],
+      "group": "build",
+      "problemMatcher": "$msCompile",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      }
+    },
+    {
       "label": "Build All Mods",
       "dependsOn": [
         "Build ContainerTooltips",
-        "Build ZoomSpeed"
+        "Build ZoomSpeed",
+        "Build ConfigurableDoorIcons"
       ],
       "dependsOrder": "parallel",
       "group": "build",
@@ -77,10 +94,28 @@
       }
     },
     {
+      "label": "Build + Deploy ConfigurableDoorIcons",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "-v:d",
+        "-c:${config:BuildConfiguration}",
+        "ConfigurableDoorIcons/ConfigurableDoorIcons.csproj",
+        "/p:DeployOniMod=true"
+      ],
+      "group": "build",
+      "problemMatcher": "$msCompile",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      }
+    },
+    {
       "label": "Build + Deploy All Mods",
       "dependsOn": [
         "Build + Deploy ContainerTooltips",
-        "Build + Deploy ZoomSpeed"
+        "Build + Deploy ZoomSpeed",
+        "Build + Deploy ConfigurableDoorIcons"
       ],
       "dependsOrder": "parallel",
       "group": "build",

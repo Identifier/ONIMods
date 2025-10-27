@@ -1,0 +1,90 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyName>ConfigurableDoorIcons</AssemblyName>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <RestorePackagesPath>..\packages</RestorePackagesPath>
+    <!-- Mod ID used for deployment path; must match mod.yaml staticID -->
+    <ModId>ConfigurableDoorIcons</ModId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>../lib/0Harmony.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>../lib/Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>../lib/Assembly-CSharp-firstpass.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>../lib/UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>../lib/UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>../lib/UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>../lib/UnityEngine.ImageConversionModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>../lib/UnityEngine.InputLegacyModule.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="PLib" Version="4.17.1" />
+    <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.26" PrivateAssets="All" />
+  </ItemGroup>
+
+  <!-- Cross-platform deploy to ONI Local mods folder via MSBuild -->
+  <PropertyGroup>
+    <!-- Allow override: dotnet build /p:OniLocalModsDir=... or env var -->
+    <OniLocalModsDir Condition="'$(OniLocalModsDir)' == '' and '$(OS)' == 'Windows_NT'">$(USERPROFILE)\Documents\Klei\OxygenNotIncluded\mods\Local\$(ModId)</OniLocalModsDir>
+    <OniLocalModsDir Condition="'$(OniLocalModsDir)' == '' and '$(OS)' != 'Windows_NT'">$(HOME)/Library/Application Support/unity.Klei.Oxygen Not Included/mods/Local/$(ModId)</OniLocalModsDir>
+  </PropertyGroup>
+
+  <Target Name="MergeDependencies" AfterTargets="Build">
+    <PropertyGroup>
+      <MergedAssemblyPath>$(TargetDir)\Merged\$(TargetName).dll</MergedAssemblyPath>
+      <MergedPdbPath>$([System.IO.Path]::ChangeExtension('$(MergedAssemblyPath)', '.pdb'))</MergedPdbPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <MergeAssemblies Include="$(TargetPath)" />
+      <MergeAssemblies Include="$(TargetDir)PLib.dll" />
+    </ItemGroup>
+
+    <ILRepack
+      Parallel="true"
+      DebugInfo="true"
+      InputAssemblies="@(MergeAssemblies)"
+      LibraryPath="$(TargetDir)"
+      TargetKind="SameAsPrimaryAssembly"
+      OutputFile="$(MergedAssemblyPath)" />
+
+    <Move SourceFiles="$(MergedAssemblyPath)" DestinationFiles="$(TargetPath)" OverwriteReadOnlyFiles="true" />
+    <Move SourceFiles="$(MergedPdbPath)" DestinationFiles="$(TargetDir)$(TargetName).pdb" Condition="Exists('$(MergedPdbPath)')" OverwriteReadOnlyFiles="true" />
+</Target>
+
+  <Target Name="DeployOniMod" AfterTargets="Build" DependsOnTargets="MergeDependencies" Condition="'$(DeployOniMod)' != ''">
+    <Message Text="Deploying mod to: $(OniLocalModsDir)" Importance="High" />
+    <MakeDir Directories="$(OniLocalModsDir)" />
+    <MakeDir Directories="$(OniLocalModsDir)\Sprites" />
+    <ItemGroup>
+      <ModOutputs Include="$(ProjectDir)mod.yaml" />
+      <ModOutputs Include="$(ProjectDir)mod_info.yaml" />
+      <ModOutputs Include="$(TargetPath)" />
+      <ModOutputs Include="$(TargetDir)$(TargetName).pdb" Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
+      <SpriteFiles Include="$(ProjectDir)Sprites\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ModOutputs)" DestinationFolder="$(OniLocalModsDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(SpriteFiles)" DestinationFolder="$(OniLocalModsDir)\Sprites" SkipUnchangedFiles="true" />
+  </Target>
+</Project>
