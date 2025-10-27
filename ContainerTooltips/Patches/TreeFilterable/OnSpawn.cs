@@ -7,7 +7,7 @@ namespace ContainerTooltips
     {
         private static void Postfix(TreeFilterable __instance)
         {
-            Debug.Log($"[ContainerTooltips]: TreeFilterable_OnSpawn called for {UserMod.GetName(__instance)}");
+            // Debug.Log($"[ContainerTooltips]: TreeFilterable_OnSpawn called for {UserMod.GetName(__instance)}");
             __instance?.gameObject.AddOrGet<FilterableSettingsBehaviour>();
         }
     }
