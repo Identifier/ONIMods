@@ -1,12 +1,7 @@
 using HarmonyLib;
 using KMod;
-using System.Collections.Generic;
-
 using PeterHan.PLib.Core;
 using PeterHan.PLib.Options;
-using UnityEngine;
-using System.Diagnostics;
-using System.IO;
 
 namespace ConfigurableDoorIcons
 {
@@ -20,7 +15,7 @@ namespace ConfigurableDoorIcons
 			PUtil.InitLibrary();
 			new POptions().RegisterOptions(this, typeof(Options));
 
-			if (!DoorIcons.Pathfinder.FindModRootPath("ConfigurableDoorIcons", "0", out RootPath))
+			if (!DoorIcons.Pathfinder.FindModRootPath("ConfigurableDoorIcons", "3598063686", out RootPath))
 			{
 				Debug.LogError("[ConfigurableDoorIcons] Could not find mod root path!");
 			}
