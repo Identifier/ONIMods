@@ -19,15 +19,6 @@ namespace DoorIcons
             var go = new GameObject("DoorIcon");
             var renderer = go.FindOrAddComponent<SpriteRenderer>();
 
-            // Need to add the game object to DoorIcons in order for UpdateIcon/SetIcon to work.
-            State.DoorIcons.Add
-            (
-                door,
-                go
-            );
-
-            UpdateIcon(door);
-
             renderer.material.renderQueue = 5000;
 
             // Apply the user's preferred transparency
@@ -102,6 +93,15 @@ namespace DoorIcons
 
                     break;
             }
+
+            // Need to add the game object to DoorIcons in order for UpdateIcon/SetIcon to work.
+            State.DoorIcons.Add
+            (
+                door,
+                go
+            );
+
+            UpdateIcon(door);
 
             return go;
         }
