@@ -42,28 +42,13 @@ namespace DoorIcons.Patches
             }
         }
 
-        [HarmonyPatch(typeof(AccessControlSideScreen))]
-        [HarmonyPatch("OnPermissionChanged")]
-        public static class Door_Update_OnMinionPermissionChange
+        [HarmonyPatch(typeof(AccessControl))]
+        [HarmonyPatch("SetStatusItem")]
+        public static class AccessControl_SetStatusItem
         {
-            public static void Postfix(AccessControlSideScreen __instance)
+            public static void Postfix(AccessControl __instance)
             {
-                var door = GetAccessSideScreenDoorTarget(__instance);
-
-                if (door != null)
-                {
-                    IconManager.UpdateIcon(door);
-                }
-            }
-        }
-
-        [HarmonyPatch(typeof(AccessControlSideScreen))]
-        [HarmonyPatch("RefreshOnline")]
-        public static class Door_Update_OnDefaultPermissionChange
-        {
-            public static void Postfix(AccessControlSideScreen __instance)
-            {
-                var door = GetAccessSideScreenDoorTarget(__instance);
+                var door = __instance.GetComponent<Door>();
 
                 if (door != null)
                 {

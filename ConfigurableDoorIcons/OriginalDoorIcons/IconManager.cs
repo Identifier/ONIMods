@@ -10,7 +10,7 @@ namespace DoorIcons
 {
     public static class IconManager
     {
-        private static readonly AccessTools.FieldRef<AccessControl, List<KeyValuePair<Ref<KPrefabID>, AccessControl.Permission>>> GetSavedPermissions = AccessTools.FieldRefAccess<AccessControl, List<KeyValuePair<Ref<KPrefabID>, AccessControl.Permission>>>("savedPermissions");
+        private static readonly AccessTools.FieldRef<AccessControl, List<KeyValuePair<int, AccessControl.Permission>>> GetSavedPermissions = AccessTools.FieldRefAccess<AccessControl, List<KeyValuePair<int, AccessControl.Permission>>>("savedPermissionsById");
 
         private static readonly AccessTools.FieldRef<Door, Door.ControlState> GetDoorStatus = AccessTools.FieldRefAccess<Door, Door.ControlState>("controlState");
 
@@ -166,29 +166,50 @@ namespace DoorIcons
 
         private static bool HasCustomGlobalPermissions(AccessControl access, out ExtendedDoorState doorState)
         {
-            switch (access.DefaultPermission)
+            doorState = ExtendedDoorState.Invalid;
+            foreach (var tag in GameTags.Minions.Models.AllModels.Concat([GameTags.Robot]))
             {
-                case AccessControl.Permission.GoLeft:
-                    doorState = ExtendedDoorState.AccessLeft;
-                    return true;
+                var thisDoorState = access.GetDefaultPermission(tag) switch
+                {
+                    AccessControl.Permission.Both => ExtendedDoorState.Auto,
+                    AccessControl.Permission.GoLeft => ExtendedDoorState.AccessLeft,
+                    AccessControl.Permission.GoRight => ExtendedDoorState.AccessRight,
+                    AccessControl.Permission.Neither => ExtendedDoorState.AccessRestricted,
+                    _ => ExtendedDoorState.Invalid,
+                };
 
-                case AccessControl.Permission.GoRight:
-                    doorState = ExtendedDoorState.AccessRight;
+                if (doorState == ExtendedDoorState.Invalid)
+                {
+                    // First permission we encounter in the list
+                    doorState = thisDoorState;
+                }
+                else if (doorState != thisDoorState)
+                {
+                    // If ever we encounter different permissions in the list, return "custom"
+                    doorState = ExtendedDoorState.AccessCustom;
                     return true;
-
-                case AccessControl.Permission.Neither:
-                    doorState = ExtendedDoorState.AccessRestricted;
-                    return true;
-
-                default:
-                    doorState = ExtendedDoorState.Invalid;
-                    return false;
+                }
             }
+
+            return doorState != ExtendedDoorState.Invalid;
         }
 
         private static bool HasCustomDupePermissions(AccessControl access)
         {
-            return GetSavedPermissions(access).Any(p => p.Value != access.DefaultPermission);
+            return GetSavedPermissions(access).Any(p => p.Value != access.GetDefaultPermission(GetTagFromInstanceID(p.Key)));
+        }
+
+        private static Tag GetTagFromInstanceID(int id)
+        {
+            var prefab = KPrefabIDTracker.Get()?.GetInstance(id);
+            if (prefab != null && prefab.GetComponent<MinionAssignablesProxy>() is var minion)
+            {
+                Debug.Log($"[ConfigurableDoorIcons] Prefab with instance ID {id} is a {minion.GetMinionModel()}");
+                return minion.GetMinionModel();
+            }
+
+            Debug.Log($"[ConfigurableDoorIcons] Prefab with instance ID {id} has no matching tags. Assuming it's a robot?");
+            return GameTags.Robot;
         }
 
         private static void SetIcon(Door door, ExtendedDoorState targetState)
