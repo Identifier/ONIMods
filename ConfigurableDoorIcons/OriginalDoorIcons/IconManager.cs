@@ -167,6 +167,7 @@ namespace DoorIcons
         private static bool HasCustomGlobalPermissions(AccessControl access, out ExtendedDoorState doorState)
         {
             doorState = ExtendedDoorState.Invalid;
+            var setDoorState = false;
             foreach (var tag in GameTags.Minions.Models.AllModels.Concat([GameTags.Robot]))
             {
                 var thisDoorState = access.GetDefaultPermission(tag) switch
@@ -178,10 +179,11 @@ namespace DoorIcons
                     _ => ExtendedDoorState.Invalid,
                 };
 
-                if (doorState == ExtendedDoorState.Invalid)
+                if (!setDoorState)
                 {
                     // First permission we encounter in the list
                     doorState = thisDoorState;
+                    setDoorState = true;
                 }
                 else if (doorState != thisDoorState)
                 {
@@ -191,7 +193,7 @@ namespace DoorIcons
                 }
             }
 
-            return doorState != ExtendedDoorState.Invalid;
+            return false;
         }
 
         private static bool HasCustomDupePermissions(AccessControl access)

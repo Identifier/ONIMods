@@ -16,18 +16,20 @@ namespace DoorIcons.Patches
     {
         private static readonly AccessTools.FieldRef<AccessControlSideScreen, Door> GetAccessSideScreenDoorTarget = AccessTools.FieldRefAccess<AccessControlSideScreen, Door>("doorTarget");
 
-        [HarmonyPatch(typeof(Door))]
+        // If this is typeof(Door), minions opening and closing doors will cause a crash in an unrelated AddAnimOverrides call.
+        // Using typeof(Workable) makes everything work fine for some reason.
+        [HarmonyPatch(typeof(Workable))]
         [HarmonyPatch("OnSpawn")]
         public static class Door_OnSpawn
         {
-            public static void Postfix(Door __instance)
+            public static void Postfix(Workable __instance)
             {
                 if (Game.Instance == null)
                 {
                     return;
                 }
 
-                var door = __instance;
+                var door = __instance.GetComponent<Door>();
 
                 if (door != null && !State.DoorIcons.ContainsKey(door))
                 {
